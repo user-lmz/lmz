@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员控制面板</title>
+    <link rel="stylesheet" type="text/css" href="./css/admin.css">
+</head>
+<body>
+    <!-- 登录状态 -->
+    <div class="login-status">
+        <a th:if="${user} == null" href="/">未登录</a>
+    </div>
+    <div class="login-status" th:if="${user} != null">
+        欢迎，<span th:text="${user.name}"></span><br>
+        <a href="/adminLogout">退出登录</a>
+    </div>
+    <div id="app" v-cloak>
+        <div class="left" id="left">
+            <button @click="foodClick($event)">菜品管理</button>
+            <button @click="userClick($event)">用户管理</button>
+            <button @click="orderClick($event)">订单管理</button>
+        </div>
+        <div class="right">
+            <div v-if="food">
+                <table border="1px" v-if="foods.length > 0">
+                    <tr>
+                        <td>编号</td>
+                        <td>名称</td>
+                        <td>原料</td>
+                        <td>单价</td>
+                        <td>类型</td>
+                        <td>图片</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr v-for="(food,index) in foods">
+                        <td>{{ food.id }}</td>
+                        <td><input class="i1" type="text" v-model="food.name"></td>
+                        <td><input class="i2" type="text" v-model="food.material"></td>
+                        <td>￥<input class="i3" type="text" v-model="food.price"></td>
+                        <td><input class="i4" type="text" v-model="food.type"></td>
+                        <td><img :src="'./img/'+food.type+'/'+food.img"></td>
+                        <td>
+                            <button v-on:click="updateFood(food)">更新</button>
+                            <button v-on:click="deleteFood(food)">删除</button>
+                        </td>
+                    </tr>
+                    <!--<tr v-for="(food,index) in foods">
+                        <td v-model:text="food.id"></td>
+                        <td v-model:text="food.name"></td>
+                        <td v-model:text="food.material"></td>
+                        <td contenteditable="true" v-model:text="food.price"></td>
+                        <td v-model:text="food.type"></td>
+                        <td>
+                            <button v-on:click="updateFood(index, food)">更新</button>
+                            <button v-on:click="deleteFood(index, food)">删除</button>
+                        </td>
+                    </tr>-->
+                </table>
+                <p v-else>暂无数据</p>
+                <!-- 上架菜品 -->
+                <div id="main"><a href="javascript:showBg();">上架菜品</a>
+                    <div id="fullbg"></div>
+                    <div id="dialog">
+                        <p class="close"><a href="#" onclick="closeBg();">关闭</a></p>
+                        <div>
+                            <form method="post" action="/uploads" enctype="multipart/form-data">
+                                <div class="fi">菜品名<input type="text" name="name"></div>
+                                <div class="fi">原料<input type="text" name="material"></div>
+                                <div class="fi">单价(￥)<input type="text" name="price"></div>
+                                <div class="fi">类型<input type="text" name="type"></div>
+                                <div class="fi">选择图片<br><input type="file" name="photo" id="selectFiles"
+                                                               onchange="dealSelectFiles()"></div>
+                                <canvas id="myCanvas" width="200" height="200"></canvas><br>
+                                <input type="submit" value="提交">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="user">
+                <table border="1px" v-if="users.length > 0">
+                    <tr>
+                        <td>编号</td>
+                        <td>用户名</td>
+                        <td>密码</td>
+                        <td>地址</td>
+                        <td>电话</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr v-for="(user,index) in users">
+                        <td>{{ user.id }}</td>
+                        <td><input class="i1" type="text" v-model="user.name"></td>
+                        <td><input class="i2" type="text" v-model="user.password"></td>
+                        <td><input class="i3" type="text" v-model="user.address"></td>
+                        <td><input style="width: 100px" type="text" v-model="user.tel"></td>
+                        <td>
+                            <button v-on:click="updateUser(user)">更新</button>
+                            <button v-on:click="deleteUser(user)">删除</button>
+                        </td>
+                    </tr>
+                </table>
+                <p v-else>暂无数据</p>
+            </div>
+            <div v-if="order">
+                <table border="1px" v-if="orders.length > 0">
+                    <tr>
+                        <td>订单号</td>
+                        <td>顾客</td>
+                        <td>订单详情</td>
+                        <td>总价格</td>
+                        <td>评论</td>
+                        <td>发布时间</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr v-for="(order,index) in orders">
+                        <td>{{ order.o_id }}</td>
+                        <td><input style="width: 40px" type="text" v-model="order.u_name"></td>
+                        <td>
+                            <p v-for="(item, index) in order.orderItems">
+                                <span>{{ item.f_name }}</span>&nbsp;&nbsp;
+                                <span>￥{{ item.f_price }}</span>&nbsp;&nbsp;
+                                <span>×{{ item.num }}</span>&nbsp;&nbsp;
+                                <span>￥{{ item.subtotal }}</span>
+                            </p>
+                        </td>
+                        <td>￥{{ order.o_totalPrice }}</td>
+                        <td><input type="text" v-model="order.message"></td>
+                        <td><input style="width: 100px" type="text" v-model="order.time"></td>
+                        <td>
+                            <button>更新</button>
+                            <button v-on:click="deleteOrder(order)">删除</button>
+                        </td>
+                    </tr>
+                </table>
+                <p v-else>暂无数据</p>
+            </div>
+        </div>
+    </div>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script type="text/javascript">
+        //显示灰色 jQuery 遮罩层
+        function showBg() {
+            var bh = $("body").height();
+            var bw = $("body").width();
+            $("#fullbg").css({
+                height:bh,
+                width:bw,
+                display:"block"
+            });
+            $("#dialog").show();
+        }
+        //关闭灰色 jQuery 遮罩
+        function closeBg() {
+            $("#fullbg,#dialog").hide();
+        }
+        function dealSelectFiles(){
+            /// get select files.
+            var selectFiles = document.getElementById("selectFiles").files;
+            /// read file content.
+            var reader = new FileReader();
+            reader.readAsDataURL(selectFiles[0]);
+            reader.onloadend = function(){
+                /// deal data.
+                var img = new Image();
+                /// after loader, result storage the file content result.
+                img.src = this.result;
+                img.onload = function(){
+                    var myCanvas = document.getElementById("myCanvas");
+                    var cxt = myCanvas.getContext('2d');
+                    cxt.drawImage(img, 0, 0, 200, 200);
+                }
+            }
+        }
+    </script>
+    <script th:inline="javascript">
+        var foods = /*[[${foods}]]*/ [];
+        var users = /*[[${users}]]*/ [];
+        var orders = /*[[${orders}]]*/ [];
+        var v1 = new Vue({
+            el: '#app',
+            data: {
+                food: true,
+                user: false,
+                order: false,
+                foods: foods,
+                users: users,
+                orders: orders
+            },
+            methods: {
+                initState: function() {
+                    this.food = false;
+                    this.user = false;
+                    this.order = false;
+                },
+                initColor: function() {
+                    var buttons = document.getElementById('left').getElementsByTagName('button');
+                    for (var i = 0; i < buttons.length; i++){
+                        console.log(i);
+                        buttons[i].style.backgroundColor = 'white';
+                        buttons[i].style.borderRight = '1px solid blue'
+                    }
+                },
+                foodClick: function (e) {
+                    this.initState();
+                    this.initColor();
+                    this.food = true;
+                    e.target.style.backgroundColor = 'beige';
+                    e.target.style.borderRight = 'none';
+                },
+                userClick: function (e) {
+                    this.initState();
+                    this.initColor();
+                    this.user = true;
+                    e.target.style.backgroundColor = 'beige';
+                    e.target.style.borderRight = 'none';
+                },
+                orderClick: function (e) {
+                    this.initState();
+                    this.initColor();
+                    this.order = true;
+                    e.target.style.backgroundColor = 'beige';
+                    e.target.style.borderRight = 'none';
+                },
+                updateFood: function (food) {
+                    $.ajax({
+                        method:"post",
+                        url:"/updateFood",
+                        data: JSON.stringify(food),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (returnData) {
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                },
+                deleteFood: function (food) {
+                    $.ajax({
+                        method:"post",
+                        url:"/deleteFood",
+                        data: JSON.stringify(food),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (returnData) {
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                },
+                updateUser: function (user) {
+                    $.ajax({
+                        method:"post",
+                        url:"/updateUser",
+                        data: JSON.stringify(user),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (returnData) {
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                },
+                deleteUser: function (user) {
+                    $.ajax({
+                        method:"post",
+                        url:"/deleteUser",
+                        data: JSON.stringify(user),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (returnData) {
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                },
+                deleteOrder: function (order) {
+                    $.ajax({
+                        method:"post",
+                        url:"/deleteOrder",
+                        data: JSON.stringify(order),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",
+                        success: function (returnData) {
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

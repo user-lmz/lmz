@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>订单</title>
+</head>
+<style>
+    .box{
+        margin: 0 auto;
+        width: 360px;
+        border: 1px solid red;
+    }
+    .left{
+        color: orangered;
+    }
+    .right{
+        float: right;
+    }
+    .item{
+        text-align: center;
+        width: 80%;
+        margin: 10px auto;
+    }
+    .s1{
+        width: 45%;
+    }
+    .s2{
+        text-align: left;
+        width: 25%;
+    }
+    .s3{
+        text-align: left;
+        width: 10%;
+    }
+    .s4{
+        text-align: right;
+        width: 20%;
+    }
+    .foot{
+        text-align: center;
+    }
+</style>
+<body>
+    <h2 style="text-align: center">订单结果</h2>
+    <div class="box">
+        <div>
+            <span class="left">顾客</span><span class="right" th:text="${user.name}"></span>
+        </div>
+        <div>
+            <span class="left">联系电话</span><span class="right" th:text="${user.tel}"></span>
+        </div>
+        <div>
+            <span class="left">配送地址</span><span class="right" th:text="${user.address}"></span>
+        </div>
+        <table class="item">
+            <tr>购买详情</tr>
+            <tr th:each="select:${selects}">
+                <td class="s1" th:text="${select.name}"></td>
+                <td class="s2" th:text="'￥'+${select.price}"></td>
+                <td class="s3" th:text="'×'+${select.count}"></td>
+                <td class="s4" th:text="'￥'+${select.money}"></td>
+            </tr>
+        </table>
+        <div class="foot">
+            总价格：￥<span th:text="${totalPrice}"></span><br>
+            <a href="/cancelOrder">取消</a>&nbsp;&nbsp;
+            <a href="/confirmOrder">确认</a>
+        </div>
+
+    </div>
+</body>
+</html>

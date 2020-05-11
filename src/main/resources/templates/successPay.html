@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>交易成功</title>
+</head>
+<style>
+    [v-cloak]{
+        display: none;
+    }
+    p{
+        font-size: 13px;
+    }
+</style>
+<body>
+    <h3>留下好评(50字以内)</h3>
+    <div id="app" v-cloak>
+                <textarea v-model="message">
+                    {{ message }}
+                </textarea>
+        <button @click="publish">发布</button>
+        <h2>------评论区------</h2>
+        <ul>
+            <li v-if="message.length > 0" >
+                {{ message }}<p v-if="time.length > 0">发布于：{{ time }}</p>
+            </li>
+            <li th:if="${orders} != null" th:each="order:${orders}">
+                <span th:text="${order.u_name}"></span>&nbsp;&nbsp;
+                <span th:text="${order.message}"></span>&nbsp;&nbsp;
+                <span th:text="${order.time}"></span>
+            </li>
+        </ul>
+        <a href="/backToIndex">返回首页</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                message: '',
+                time: ''
+            },
+            methods: {
+                publish: function(){
+                    var date = new Date()
+                    var year = date.getFullYear()
+                    var month = date.getMonth()+1
+                    var day = date.getDate()
+                    var hours = date.getHours()
+                    var minutes = date.getMinutes()
+                    var seconds = date.getSeconds()
+                    this.time = year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds
+                    $.ajax({
+                        method: "post",
+                        url: "/publishComment",
+                        data: JSON.stringify({"message": this.message, "time": this.time}),
+                        contentType:"application/json; charset=utf-8",
+                        dataType: "text",                       //此处为json,success不生效
+                        success: function (returnData) {       //returnData为后端@ResponseBody返回的数据
+                            if (returnData){
+                                console.log(returnData);
+                                window.location.href = returnData;
+                            }
+                        }
+                    });
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.ordersystem.mapper.UserMapper">
+    <resultMap id="userResultMap" type="user">
+        <result column="u_id" property="id"/>
+        <result column="u_name" property="name"/>
+        <result column="u_password" property="password"/>
+        <result column="u_address" property="address"/>
+        <result column="u_tel" property="tel"/>
+    </resultMap>
+    <insert id="insertUser" parameterType="user">
+        insert into user(u_id, u_name, u_password, u_address, u_tel)
+        values(#{id}, #{name}, #{password}, #{address}, #{tel})
+    </insert>
+    <select id="getExistU_id" resultType="Integer">
+        select u_id from user
+    </select>
+    <select id="getExistU_name" resultType="String">
+        select u_name from user
+    </select>
+    <select id="getPasswordByName" parameterType="user" resultType="String">
+        select u_password from user where u_name=#{name}
+    </select>
+    <select id="getUserByName" parameterType="user" resultMap="userResultMap">
+        select * from user where u_name=#{name}
+    </select>
+    <select id="getAllUser" resultMap="userResultMap">
+        select * from user
+    </select>
+    <update id="updateUserById" parameterType="user">
+        update user set u_name=#{name}, u_password=#{password},
+        u_address=#{address}, u_tel=#{tel} where u_id=#{id}
+    </update>
+    <delete id="deleteUserById" parameterType="user">
+        delete from user where u_id=#{id}
+    </delete>
+</mapper>

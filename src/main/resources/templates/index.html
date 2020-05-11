@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:v-on="http://www.w3.org/1999/xhtml"
+	  xmlns:v-model="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>首页</title>
+		<link rel="stylesheet" type="text/css" href="./css/index.css">
+	</head>
+	<body>
+		<div class="header">
+			
+		</div>
+		<div class="swiper-container">
+			<!-- 上半部分 -->
+			<div id="se" v-cloak>
+				<!-- 登录状态 -->
+				<a class="login-status" th:if="${user} == null" href="/">未登录</a>
+				<div class="login-status" th:if="${user} != null">
+					欢迎，<span th:text="${user.name}"></span><br>
+					<a href="/toLogout">退出登录</a>
+				</div>
+				<!-- 搜索框 -->
+				<div class="search">
+					<img src="./img/search.jpg" alt="">
+					<input type="text" v-model="text" placeholder="请输入搜索条件">
+					<button  @click="search">搜索</button>
+				</div>
+				<!-- 搜索结果 -->
+				<div class="search-block" v-if="view === true">
+					<h3>搜索结果</h3>
+				</div>
+				<div class="search-result" v-if="view === true && items.length != 0">
+					<div class="item" v-for="(item, i) in items">
+						<div class="item-left">
+							<div class="item-img"><img :src="`./img/${item.type}/${item.list.img}`"></div>
+						</div>
+						<div class="item-right">
+							<div class="title">{{ item.list.title }}</div>
+							<div class="price">价格：￥{{ item.list.money }}</div>
+							<div class="add">
+								<button v-on:click="plus(i)">+</button>
+								<input type="number" min="0" v-model:value="item.list.text">
+								<button v-on:click="subtract(i)">-</button>
+								&nbsp;&nbsp;&nbsp;<button class="b1" @click="add(i)">添加</button>
+							</div>
+						</div>
+						<div class="item-detail">
+							<a href="#">详细信息...</a>
+						</div>
+					</div>
+					<button class="confirm" @click=" view=false, items=[]">确认</button>	
+				</div>
+				<!-- 商品 <-> 详情 -->
+				<ul class="swiper-container-ul">
+					<li class="swiper-container-ul-li actives">商品</li>
+					<li class="swiper-container-ul-li">详情</li>
+				</ul>
+			</div>
+
+			<!-- 下半部分 -->
+			<div class="swiper-wrapper">
+				<div class="content">
+					<!--左侧-->
+					<div class="left" id="left" v-cloak>
+						<ul>
+							<li v-for="item in items">{{item.name}}</li>
+						</ul>
+					</div>
+	
+					<!--右侧-->
+					<div class="right" id="right" v-cloak>
+						<ul>
+							<li v-for="(item, index) in items">{{item.name}}
+								<div class="class-title">{{item.type}}</div>
+								<div v-for="(ite, index1) in item.list">
+									<div class="item">
+										<div class="item-left">
+											<div class="item-img"><img :src="`./img/${item.type}/${ite.img}`"></div>
+										</div>
+										<div class="item-right">
+											<div class="title">{{ite.title}}</div>
+											<div class="material">原料：{{ite.material}}</div>
+											<div class="price">价格：￥<span id="money">{{ ite.money }}</span></div>
+											<div class="add">
+												<button v-on:click="plus(index, index1)">+</button>
+												<input :value="ite.text" @input="inputChange($event,index,index1)">
+												<button v-on:click="subtract(index, index1)">-</button>
+												&nbsp;&nbsp;&nbsp;<button class="b1" @click="add(index, index1)">添加</button>
+											</div>
+										</div>
+										<div class="item-detail">
+											<a href="#">详细信息...</a>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>						
+					</div>					
+				</div>
+			</div>
+			<div id="shop" v-if="selects.length != 0" class="shop-car" :style="{height: x+'px'}" v-cloak>
+				<button @click="onswitch" ><img style="width: 60px" :src="'./img/button/'+img"></button>
+				<button class="clear-shop" @click="selects.splice(0,selects.length)">清空购物车</button>
+				<h3 style="text-align: center;">购物车</h3>
+				<div
+					is="result"
+					v-for="(select, index) in selects"
+					v-bind:key="select.id"
+					v-bind:select="select"
+					v-on:remove="selects.splice(index,1)"
+				></div>
+				<div v-if="totalPrice != '0'" style="text-align: center;" >总价格：￥{{ totalPrice }}</div>
+				<button @click="onsubmit">提交</button>
+			</div>
+		</div>
+	</body>
+	
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+	<!--<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>-->
+	<script>
+	    $(function () {
+	        $('.content').css('height',$('right').height)
+	        $('.left ul li').eq(0).addClass('active');
+	
+	        $(window).scroll(function () {
+	            /* 这里在滚动的时候做监听,如果翻上去的部分超过150（150是header的高度）的时候，
+	            切换商品和左侧这里做绝对定位，然后右侧的margin-left设置成左侧的宽度*/
+	
+	            if($(window).scrollTop()>= 150){
+	            	$('#se').css('position','fixed');
+	                //$('.swiper-container-ul').css('position','fixed');
+	                $('.left').css('position','fixed');
+	                $('.right').css('margin-left',$('.left').width());
+	            }else{
+	            	$('#se').css('position','');
+	                //$('.swiper-container-ul').css('position','');
+	                $('.left').css('position','');
+	                $('.right').css('margin-left','');
+	            }
+	
+	            // 获取右侧当前li距离顶端的高度 - 右侧已经翻上去的高度 - head的高度
+	            $('.right ul li').each(function () {
+	                var target = parseInt($(this).offset().top - $(window).scrollTop() - 150)
+	                //console.log(parseInt($(this).offset().top),$(window).scrollTop())
+	                var i = $(this).index()
+	
+	            // if target<=0 清除所又li的active, 给当前li赋予active
+	
+	                if(target<=0){
+	                    $('.left ul li').removeClass('active');
+	                    $('.left ul li').eq(i).addClass('active')
+	                }
+	            })
+	        });
+	
+	        // 点击左侧li通过下标找到相应li的位置，通过animate滚动到相应的位置
+	        $('.left ul li').click(function () {
+	            var i = $(this).index('.left ul li')
+				$('body, html').animate({scrollTop: $('.right ul li').eq(i).offset().top-80},500)
+	        });
+			$('.swiper-container-ul-li').click(function(){ 
+			    var index = $(this).index(); 
+			    if(index == 0){ 
+			      $('.swiper-slide').eq(0).show(); 
+			      $('.swiper-container-ul-li').eq(0).addClass('actives'); 
+			      $('.swiper-slide').eq(1).hide(); 
+			      $('.swiper-container-ul-li').eq(1).removeClass('actives'); 
+			    }else { 
+			      $('.swiper-slide').eq(0).hide(); 
+			      $('.swiper-container-ul-li').eq(0).removeClass('actives'); 
+			      $('.swiper-slide').eq(1).show(); 
+			      $('.swiper-container-ul-li').eq(1).addClass('actives'); 
+			    } 
+			});
+	    })
+	</script>
+
+	<script th:inline="javascript">
+		//解决浮点数乘法损失精度问题
+		function numMulti(num1, num2) {
+			var baseNum = 0;
+			try {
+				baseNum += num1.toString().split(".")[1].length;
+			} catch (e) {
+			}
+			try {
+				baseNum += num2.toString().split(".")[1].length;
+			} catch (e) {
+			}
+			return Number(num1.toString().replace(".", "")) * Number(num2.toString().replace(".", "")) / Math.pow(10, baseNum);
+		}
+		//购物车组件
+		Vue.component('result', {
+			props: ['select'],
+			data: function(){
+				return {
+					style: {
+						textAlign: 'center'
+					},
+					style1: {
+						display: 'inline-block',
+						fontWeight: 'bolder',
+						color: '#DC143C',
+						marginRight: '20px',
+						width: '115px'
+					},
+					style2: {
+						width: '40px',
+						textAlign: 'center'
+					},
+					style3: {
+						display: 'inline-block',
+						width: '60px',
+						color: 'blue'
+					}
+				} 
+			},
+			template: 
+			`<div class="box1"><span :style="style1">{{ select.name }}</span>数量：<input v-model:value="select.count" :style="style2">
+			&nbsp;&nbsp;&nbsp;价格:<span :style="style3">￥{{ select.money }}</span>
+			&nbsp;&nbsp;<button @click="$emit('remove')">Remove</button></div>`
+		})
+		//数据
+		var se = new Vue({
+			el: '#se',
+			data: function(){
+				return {
+					text: '',
+					items: [],
+					view: false
+				}				
+			},
+			methods: {
+				search: function() {
+					for(var i = 0; i < right.items.length; i++){
+						for(var j = 0; j < right.items[i].list.length; j++){
+							if(this.text == '')
+								break;
+							if(right.items[i].list[j].title.indexOf(this.text) != -1) {
+								this.items.push({type: right.items[i].type, list: right.items[i].list[j] })
+							}
+						}
+					}
+					this.view = true
+				},
+				/* 定时second秒后还原 */
+				restore: function(second, index){
+					setTimeout(()=>{
+						this.items[index].list.text = 1;
+						this.items[index].list.money = this.items[index].list.price
+					}, 1000*second)
+				},
+				plus: function(index){
+					this.items[index].list.text = parseInt(this.items[index].list.text);
+					this.items[index].list.text += 1;
+					this.items[index].list.money = numMulti(this.items[index].list.text,this.items[index].list.price);
+					//this.restore(3, index)
+				},
+				subtract: function(index){
+					if(this.items[index].list.text > 1){
+						this.items[index].list.text = parseInt(this.items[index].list.text);
+						this.items[index].list.text-=1;
+						this.items[index].list.money = numMulti(this.items[index].list.text,this.items[index].list.price);
+					}
+					//this.restore(3, index)
+				},
+				add: function(index){
+					right.selects.push({
+						id: right.nextSelectId++, 
+						name: this.items[index].list.title,
+						count: this.items[index].list.text,
+						money: this.items[index].list.money,
+						price: this.items[index].list.price,
+						f_id: this.items[index].list.f_id
+					});
+					this.restore(3, index)
+				},
+			},
+		});
+	    var left = new Vue({
+	        el: '#left',
+	        data: {
+	            items: [
+	                { name : '主食' },
+	                { name : '汤品' },
+	                { name : '炒菜' },
+	                { name : '盖浇饭' },
+	                { name : '饮料' },
+	                /* { name : '分类6' },
+	                { name : '分类7' },
+	                { name : '分类8' } */
+	            ]
+	        }
+	    });
+		var items = /*[[${items}]]*/ [];
+		var user = /*[[${user}]]*/ {};
+
+	    var right = new Vue({
+	        el: '#right',
+	        data: {
+				error: false,
+				nextSelectId: 0,
+				flag: '',
+				timer: '',
+				selects: [],
+	            items: items,
+				user: user
+	        },
+			methods: {
+	        	inputChange: function(event,index,index1){
+	        		if(event.target.value != "" && event) {
+						this.items[index].list[index1].text = parseInt(event.target.value);
+						this.items[index].list[index1].money = numMulti(this.items[index].list[index1].text,this.items[index].list[index1].price);
+						document.getElementById("money").textContent = this.items[index].list[index1].money;
+						console.log(this.items[index].list[index1].money);
+					}else if (event.target.value == ""){
+						this.items[index].list[index1].text = 0;
+						this.items[index].list[index1].money = 0;
+						document.getElementById("money").textContent = '0'
+					}else {
+
+					}
+				},
+				restore: function(second, index, index1){
+					setTimeout(()=>{
+						this.items[index].list[index1].text = 1;
+						this.items[index].list[index1].money = this.items[index].list[index1].price
+					}, 1000*second)
+				},
+				plus: function(index, index1){
+					this.items[index].list[index1].text = parseInt(this.items[index].list[index1].text);
+					this.items[index].list[index1].text+=1;
+					this.items[index].list[index1].money = numMulti(this.items[index].list[index1].text,this.items[index].list[index1].price);
+					document.getElementById("money").textContent = this.items[index].list[index1].money;
+					console.log(this.items[index].list[index1].money);
+					//this.restore(3, index, index1)
+				},
+				subtract: function(index, index1){
+					if(this.items[index].list[index1].text > 1){
+						this.items[index].list[index1].text = parseInt(this.items[index].list[index1].text);
+						this.items[index].list[index1].text-=1;
+						this.items[index].list[index1].money = numMulti(this.items[index].list[index1].text,this.items[index].list[index1].price);
+						document.getElementById("money").textContent = this.items[index].list[index1].money;
+						console.log(this.items[index].list[index1].money);
+					}
+					//this.restore(3, index, index1)
+				},
+				add: function(index, index1){
+					if (this.user == null)
+						alert("请先登录");
+					else {
+						this.selects.push({
+							id: this.nextSelectId++,
+							name: this.items[index].list[index1].title,
+							count: this.items[index].list[index1].text,
+							money: this.items[index].list[index1].money,
+							price: this.items[index].list[index1].price,
+							f_id: this.items[index].list[index1].f_id
+						});
+						this.restore(3, index, index1)
+					}
+				},
+			},		
+	    });
+		var shop = new Vue({
+			el: '#shop',
+			data: {
+				selects: right.selects,
+				x: 100,
+				imgs: ['up.jpg','down.jpg'],
+				img: 'up.jpg',
+				index: 0
+			},
+			methods: {
+				onsubmit: function () {
+					/*var data = {
+						"selects": this.selects,
+						"totalPrice": this.totalPrice
+					};*/
+					$.ajax({
+						method:"post",
+						url:"/confirmSelects",
+						//withCredentials:true,                 //跨域请求
+						data: JSON.stringify(this.selects),
+						contentType:"application/json; charset=utf-8",
+						dataType: "text",                       //此处为json,success不生效
+						success: function (returnData) {       //returnData为后端@ResponseBody返回的数据
+							if (returnData){
+								console.log(returnData);
+								window.location.href = returnData;
+							}
+						}
+					});
+				},
+				onswitch: function () {
+					this.x = 400 - this.x
+					this.img = this.imgs[1-this.index]
+					this.index = 1-this.index
+				}
+			},
+			computed: {
+				totalPrice: function(){
+					var total = 0
+					for (var i=0; i < this.selects.length; i++){
+						var item = this.selects[i]
+						total += item.price * item.count
+					}
+					return total.toString().replace(/\B(?=(\d{3})+$)/g,',')
+				},
+			},
+		});
+	</script>
+</html>
