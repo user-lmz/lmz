@@ -218,7 +218,7 @@
 			},
 			template: 
 			`<div class="box1"><span :style="style1">{{ select.name }}</span>数量：<input v-model:value="select.count" :style="style2">
-			&nbsp;&nbsp;&nbsp;价格:<span :style="style3">￥{{ select.money }}</span>
+			&nbsp;&nbsp;&nbsp;价格:<span :style="style3">￥{{ numMulti(select.price, select.count) }}</span>
 			&nbsp;&nbsp;<button @click="$emit('remove')">Remove</button></div>`
 		})
 		//数据
@@ -394,17 +394,17 @@
 					});
 				},
 				onswitch: function () {
-					this.x = 400 - this.x
-					this.img = this.imgs[1-this.index]
+					this.x = 400 - this.x;
+					this.img = this.imgs[1-this.index];
 					this.index = 1-this.index
 				}
 			},
 			computed: {
 				totalPrice: function(){
-					var total = 0
+					var total = 0;
 					for (var i=0; i < this.selects.length; i++){
-						var item = this.selects[i]
-						total += item.price * item.count
+						var item = this.selects[i];
+						total += numMulti(item.price, item.count)
 					}
 					return total.toString().replace(/\B(?=(\d{3})+$)/g,',')
 				},
