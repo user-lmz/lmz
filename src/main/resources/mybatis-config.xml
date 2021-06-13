@@ -8,12 +8,16 @@
         <typeAlias type="com.example.ordersystem.pojo.OrderItem" alias="orderItem"/>
         <typeAlias type="com.example.ordersystem.pojo.BlanketOrder" alias="blanketOrder"/>
         <typeAlias type="com.example.ordersystem.pojo.Food" alias="food"/>
+        <typeAlias type="com.example.ordersystem.pojo.User" alias="merchant"/>
+
 
     </typeAliases>
     <mappers>
         <mapper resource="com/example/ordersystem/mapper/UserMapper.xml"/>
         <mapper resource="com/example/ordersystem/mapper/OrderMapper.xml"/>
         <mapper resource="com/example/ordersystem/mapper/FoodMapper.xml"/>
+        <mapper resource="com/example/ordersystem/mapper/AdminMapper.xml"/>
+
 
     </mappers>
 </configuration>

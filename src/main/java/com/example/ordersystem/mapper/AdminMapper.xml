@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.ordersystem.mapper.AdminMapper">
+    <resultMap id="merchant" type="merchant">
+        <result column="m_id" property="id"/>
+        <result column="m_name" property="name"/>
+        <result column="m_password" property="password"/>
+        <result column="m_address" property="address"/>
+        <result column="m_tel" property="tel"/>
+    </resultMap>
+    <select id="getExistM_id" resultType="Integer">
+        select m_id from merchant
+    </select>
+    <select id="getExistM_name" resultType="String">
+        select m_name from merchant
+    </select>
+    <select id="getPasswordByName" resultType="String">
+        select m_password from merchant where m_name=#{name}
+    </select>
+    <select id="getUserByName" resultMap="merchant">
+        select * from merchant where m_name=#{name}
+    </select>
+</mapper>
