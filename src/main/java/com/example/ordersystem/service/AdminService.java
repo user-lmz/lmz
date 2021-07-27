@@ -20,7 +20,7 @@ public class AdminService {
         while (ids.contains(i))
             i++;
         user.setId(i++);
-        adminMapper.insertUser(user);
+        adminMapper.insertMerchant(user);
     }
 
     public boolean checkLogin(User user){

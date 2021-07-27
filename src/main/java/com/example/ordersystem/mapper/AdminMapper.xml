@@ -9,6 +9,10 @@
         <result column="m_address" property="address"/>
         <result column="m_tel" property="tel"/>
     </resultMap>
+    <insert id="insertMerchant" parameterType="merchant">
+        insert into merchant(m_id, m_name, m_password, m_address, m_tel)
+        values(#{id}, #{name}, #{password}, #{address}, #{tel})
+    </insert>
     <select id="getExistM_id" resultType="Integer">
         select m_id from merchant
     </select>

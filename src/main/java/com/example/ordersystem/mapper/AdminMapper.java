@@ -7,9 +7,8 @@ import java.util.List;
 
 @Mapper
 public interface AdminMapper {
-    @Insert("insert into merchant(m_id, m_name, m_password, m_address, m_tel) " +
-            "values(#{id}, #{name}, #{password}, #{address}, #{tel})")
-    boolean insertUser(User user);
+
+    boolean insertMerchant(User user);
 
     List<Integer> getExistM_id();
 
