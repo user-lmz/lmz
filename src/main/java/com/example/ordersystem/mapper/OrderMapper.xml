@@ -1,0 +1,65 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ordersystem.mapper.OrderMapper">
+    <resultMap id="user" type="user">
+        <result column="u_id" property="id"/>
+        <result column="u_name" property="name"/>
+        <result column="u_password" property="password"/>
+        <result column="u_address" property="address"/>
+        <result column="u_tel" property="tel"/>
+    </resultMap>
+    <!--<resultMap id="orderItem" type="orderItem">
+        <result column="id" property="id"/>
+        <result column="f_id" property="f_id"/>
+        <result column="num" property="num"/>
+        <result column="subtotal" property="subtotal"/>
+    </resultMap>
+    <resultMap id="order" type="order">
+        <result column="o_id" property="o_id"/>
+        <result column="u_id" property="u_id"/>
+        <result column="o_totalprice" property="o_totalprice"/>
+        <result column="message" property="message"/>
+        <result column="time" property="time"/>
+    </resultMap>-->
+    <insert id="insertItem" parameterType="orderItem">
+        INSERT INTO item (id, f_id, num, subtotal, o_id) VALUES
+        (#{id}, #{f_id}, #{num}, #{subtotal}, #{o_id})
+    </insert>
+    <select id="getIdFromItem" resultType="Integer">
+        select id from item
+    </select>
+    <insert id="insertOrder" parameterType="order">
+        insert into `order`(o_id, u_id, o_totalPrice) values
+        (#{o_id}, #{u_id}, #{o_totalPrice})
+    </insert>
+    <select id="getO_idFromOrder" resultType="Integer">
+        select o_id from `order`
+    </select>
+    <select id="getOrder" resultType="order">
+        select message, time, u_name from `order`,user
+        where `order`.u_id = user.u_id order by o_id desc
+    </select>
+    <update id="setOrderMessageAndTime">
+        update `order` set message=#{message}, time=#{time} where o_id=#{o_id}
+    </update>
+    <select id="getO_idByU_id" resultType="Integer">
+        select o_id from `order` where u_id=#{u_id}
+    </select>
+    <delete id="deleteItemByO_id">
+        delete from item where o_id=#{o_id}
+    </delete>
+    <delete id="deleteOrderByU_id">
+        delete from `order` where u_id=#{u_id}
+    </delete>
+    <select id="getOrderItemByO_id" resultType="orderItem">
+        select id, f_name, f_price, num, subtotal
+        from item,food where food.f_id = item.f_id
+    </select>
+    <select id="getBlanketOrder" resultType="blanketOrder">
+        select o_id, message, time, u_name, o_totalPrice
+        from user,`order` where user.u_id = `order`.u_id
+    </select>
+    <delete id="deleteOrderByO_id">
+        delete from `order` where o_id=#{o_id}
+    </delete>
+</mapper>

@@ -110,8 +110,9 @@ public class AdminController {
     @ResponseBody
     public String deleteFood(@RequestBody Food food) throws IOException{
         //String realPath = "src\\main\\resources\\static\\img\\";
-        String realPath = ResourceUtils.getURL("classpath:static/img/").getPath()
-                .replace("/","\\");
+        String realPath = ResourceUtils
+                .getURL("classpath:static/img/")
+                .getPath();
         File file = new File(realPath+food.getType()+"\\"+food.getImg());
         if (file.exists()){
             if (file.delete()){
@@ -173,8 +174,10 @@ public class AdminController {
 
             //文件上传的地址
             //String realPath = "src\\main\\resources\\static\\img\\";
-            String realPath = ResourceUtils.getURL("classpath:static/img").getPath()
-                    .replace("/","\\");
+            /*if in windows需要在语句加上.replace("/", "\\")*/
+            String realPath = ResourceUtils
+                    .getURL("classpath:static/img")
+                    .getPath();
 
             File path1 = new File(realPath);
             //用于查看路径是否正确
@@ -183,9 +186,13 @@ public class AdminController {
 
             //限制文件上传的类型
             String contentType = photo.getContentType();
-            if("image/jpeg".equals(contentType) || "image/jpg".equals(contentType) ){
+            if("image/jpeg".equals(contentType) || "image/jpg".equals(contentType)) {
                 File file1 = new File(path1.getAbsolutePath());
-                if(!file1.exists()) file1.mkdirs();
+                if(!file1.exists()) {
+                    boolean re = file1.mkdirs();
+                    if (re)
+                        System.out.println(file1.getAbsolutePath()+"创建成功");
+                }
                 String path = file1.getAbsolutePath()+"/"+food.getType()+"/";
                 //完成文件的上传
                 File file = new File(path + fileName);
@@ -193,12 +200,11 @@ public class AdminController {
                 System.out.println("图片上传成功!");
                 System.out.println(file.getPath());
                 mv.setViewName("redirect:/toAdmin");
-                return mv;
             } else {
                 System.out.println("上传失败！");
                 mv.setViewName("admin");
-                return mv;
             }
+            return mv;
         } else {
             System.out.println("上传失败！");
             mv.setViewName("admin");

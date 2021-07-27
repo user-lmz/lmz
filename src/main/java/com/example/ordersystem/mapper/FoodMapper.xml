@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.ordersystem.mapper.FoodMapper">
+    <resultMap id="food" type="food">
+        <result column="f_id" property="id"/>
+        <result column="f_name" property="name"/>
+        <result column="f_materials" property="material"/>
+        <result column="f_price" property="price"/>
+        <result column="f_type" property="type"/>
+        <result column="f_img" property="img"/>
+    </resultMap>
+    <select id="selectFood" resultMap="food">
+        select * from food
+    </select>
+    <insert id="insertFood" parameterType="food">
+        insert into food(f_id, f_name, f_materials, f_price, f_type, f_img)
+        values(#{id}, #{name}, #{material}, #{price}, #{type}, #{img})
+    </insert>
+    <select id="getF_ids" resultType="Integer">
+        select f_id from food
+    </select>
+    <update id="updateFoodById" parameterType="food">
+        update food set f_name=#{name}, f_materials=#{material},
+        f_price=#{price}, f_type=#{type} where f_id=#{id}
+    </update>
+    <delete id="deleteFoodById" parameterType="food">
+        delete from food where f_id=#{id}
+    </delete>
+</mapper>

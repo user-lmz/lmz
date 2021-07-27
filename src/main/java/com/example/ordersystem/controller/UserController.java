@@ -3,7 +3,6 @@ package com.example.ordersystem.controller;
 import com.example.ordersystem.pojo.User;
 import com.example.ordersystem.service.FoodService;
 import com.example.ordersystem.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,12 +13,17 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
-    @Autowired
+    final
     UserService userService;
-    @Autowired
+    final
     FoodService foodService;
 
     User t_user;
+
+    public UserController(UserService userService, FoodService foodService) {
+        this.userService = userService;
+        this.foodService = foodService;
+    }
 
     @RequestMapping("")
     public String toLogin(){
